@@ -139,7 +139,8 @@ with (avg_steps_interval,
 
 ![](PA1_template_files/figure-html/Average_Daily_Activity_Patterns-1.png) 
 
-<p> 2. Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps? **835** </p>
+<p> 2. Which 5-minute interval, on average across all the days in the dataset, 
+contains the maximum number of steps? **835** </p>
 
 <hr></hr>
 
@@ -215,7 +216,8 @@ tbl <- total_steps_day[total_steps_day$tot_steps_na == 0, ]
 
 <p> 4. The impact of imputing missing data on the estimates of the total daily number of steps is: 
 <ul>
-    <li> the **(8) days** when no data is recorded are now plotted as 10641 (count is higher) instead of 0 </li>
+    <li> the **(8) days** when no data is recorded are now plotted as 10641 
+    (count is higher) instead of 0 </li>
     <li> the mean and median scores are higher </li>
 </ul></p>
 
@@ -262,7 +264,10 @@ adj_data[as.character(adj_data$day_wk) %in% c("5":"6"), wk_end := as.factor("Wee
 ```
 
 ```r
-ggplot(adj_data, aes(interval, adj_steps)) + geom_line() + facet_wrap(~wk_end, nrow=2) + labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + ylab("Number of steps") + theme(legend.position = "top")
+ggplot(adj_data, aes(interval, adj_steps)) + 
+  geom_line() + facet_wrap(~wk_end, nrow=2) + 
+  labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + 
+  ylab("Number of steps")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 
