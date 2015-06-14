@@ -2,14 +2,15 @@
 
 
 ## Loading and preprocessing the data
-The dataset is stored in a comma-separated-value (CSV) file and there are a total of **17,568** observations in this dataset
+<p> The dataset is a comma-separated-value (CSV) file with a total of **17,568** observations</p>
 
-Assuming that the data (activity.zip) is in the current working directory, the following will code will:
+<p> 1. To load the data </p>
+<ul>
+  <li> unzip the data file (activity.zip) </li>
+  <li> read the data using read.csv </li>
+</ul>
 
-- unzip the data file
-- read the data 
-
-The summary of the data is as follows: 
+<p> 2. The results of the loading process is as follows: </p> 
 
 
 ```r
@@ -57,6 +58,7 @@ library(ggplot2)
 setwd("~/Coursera/RepData_PeerAssessment1")
 unzip("activity.zip")
 data <- read.csv("activity.csv")
+
 str(data)
 ```
 
@@ -66,6 +68,7 @@ str(data)
 ##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
+
 <hr></hr>
 
 ## What is mean total number of steps taken per day?
@@ -91,10 +94,21 @@ qplot(total_steps_day$tot_steps,
 ![](PA1_template_files/figure-html/Total_Steps_Day-1.png) 
 
 ```r
-## summary(total_steps_day) #check mean from summary
+summary(total_steps_day) #check mean from summary
 ```
 
-<p> 1. Total number of steps taken per day
+```
+##          date      tot_steps    
+##  2012-10-01: 1   Min.   :    0  
+##  2012-10-02: 1   1st Qu.: 6778  
+##  2012-10-03: 1   Median :10395  
+##  2012-10-04: 1   Mean   : 9354  
+##  2012-10-05: 1   3rd Qu.:12811  
+##  2012-10-06: 1   Max.   :21194  
+##  (Other)   :55
+```
+
+<p> 1. Total number of steps taken per day (calculation):
 <ul>
     <li> Mean: **9,354.23** </li>
     <li> Median: **10,395** </li>
@@ -116,11 +130,11 @@ max_interval <- subset(avg_steps_interval, avgsteps == max(avgsteps))
 ##  Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) 
 ##  and the average number of steps taken, averaged across all days (y-axis)
 with (avg_steps_interval, 
-      plot(interval, avgsteps, 
-             type="l",
-             main = "Average Daily Activity Pattern \n averaged at 5-minute Intervals across all days",                             
-             xlab = "Interval",
-             ylab = "Number of steps"))
+    plot(interval, avgsteps, 
+           type="l",
+           main = "Average Daily Activity Pattern \n averaged at 5-minute Intervals across all days",                       
+           xlab = "Interval",
+           ylab = "Average number of steps"))
 ```
 
 ![](PA1_template_files/figure-html/Average_Daily_Activity_Patterns-1.png) 
@@ -131,16 +145,20 @@ with (avg_steps_interval,
 
 
 ## Imputing missing values
+#### Strategy: *replace NAs with mean for that 5-minute interval*
 
 
 ```r
+## Calculate number of missing values
 num_missing_vals <- sum(is.na(data$steps))
 
-## Dataset: equal to the original dataset but with the missing data filled in.
-## Strategy: replace NAs with mean for that 5-minute interval
-
+## Dataset: Original dataset merged with data from 5-minute interval dataset.
 adj_data <- data.table(merge(data, avg_steps_interval, by="interval"))
+
+## Make a copy step data for adjustment
 adj_data$adj_steps <- adj_data$steps
+
+## Replace NAs (step) with 5-minute interval average
 adj_data[is.na(adj_data$adj_steps), adj_steps := as.integer(avgsteps)]
 ```
 
@@ -160,6 +178,7 @@ adj_data[is.na(adj_data$adj_steps), adj_steps := as.integer(avgsteps)]
 ```
 
 ```r
+## Calculate total steps taken per day adjusted and with NA
 total_steps_day <- summarize(group_by(adj_data, date), 
                              tot_steps_adj = sum(adj_steps), 
                              tot_steps_na = sum(steps, na.rm=TRUE))
@@ -243,7 +262,7 @@ adj_data[as.character(adj_data$day_wk) %in% c("5":"6"), wk_end := as.factor("Wee
 ```
 
 ```r
-ggplot(adj_data, aes(interval, adj_steps)) + geom_line() + facet_grid(wk_end ~ .) + labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + ylab("Number of steps")
+ggplot(adj_data, aes(interval, adj_steps)) + geom_line() + facet_wrap(~wk_end, nrow=2) + labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + ylab("Number of steps") + theme(legend.position = "top")
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-1-1.png) 

@@ -7,14 +7,15 @@ output:
 
 
 ## Loading and preprocessing the data
-The dataset is stored in a comma-separated-value (CSV) file and there are a total of **17,568** observations in this dataset
+<p> The dataset is a comma-separated-value (CSV) file with a total of **17,568** observations</p>
 
-Assuming that the data (activity.zip) is in the current working directory, the following will code will:
+<p> 1. To load the data </p>
+<ul>
+  <li> unzip the data file (activity.zip) </li>
+  <li> read the data using read.csv </li>
+</ul>
 
-- unzip the data file
-- read the data 
-
-The summary of the data is as follows: 
+<p> 2. The results of the loading process is as follows: </p> 
 
 ```{r readData, echo=TRUE}
 
@@ -26,8 +27,11 @@ library(ggplot2)
 setwd("~/Coursera/RepData_PeerAssessment1")
 unzip("activity.zip")
 data <- read.csv("activity.csv")
+
 str(data)
+
 ```
+
 <hr></hr>
 
 ## What is mean total number of steps taken per day?
@@ -49,11 +53,11 @@ qplot(total_steps_day$tot_steps,
       main = "Total Number of Steps Taken each day",
       xlab = "Total Steps per day")
 
-## summary(total_steps_day) #check mean from summary
+summary(total_steps_day) #check mean from summary
 
 ```
 
-<p> 1. Total number of steps taken per day
+<p> 1. Total number of steps taken per day (calculation):
 <ul>
     <li> Mean: **`r format(mean_steps, big.mark=",")`** </li>
     <li> Median: **`r format(median_steps, big.mark=",")`** </li>
@@ -75,11 +79,11 @@ max_interval <- subset(avg_steps_interval, avgsteps == max(avgsteps))
 ##  Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) 
 ##  and the average number of steps taken, averaged across all days (y-axis)
 with (avg_steps_interval, 
-      plot(interval, avgsteps, 
-             type="l",
-             main = "Average Daily Activity Pattern \n averaged at 5-minute Intervals across all days",                             
-             xlab = "Interval",
-             ylab = "Number of steps"))
+    plot(interval, avgsteps, 
+           type="l",
+           main = "Average Daily Activity Pattern \n averaged at 5-minute Intervals across all days",                       
+           xlab = "Interval",
+           ylab = "Average number of steps"))
 
 
 ```
@@ -90,17 +94,23 @@ with (avg_steps_interval,
 
 
 ## Imputing missing values
+#### Strategy: *replace NAs with mean for that 5-minute interval*
 
 ```{r Missing_Values}
+
+## Calculate number of missing values
 num_missing_vals <- sum(is.na(data$steps))
 
-## Dataset: equal to the original dataset but with the missing data filled in.
-## Strategy: replace NAs with mean for that 5-minute interval
-
+## Dataset: Original dataset merged with data from 5-minute interval dataset.
 adj_data <- data.table(merge(data, avg_steps_interval, by="interval"))
+
+## Make a copy step data for adjustment
 adj_data$adj_steps <- adj_data$steps
+
+## Replace NAs (step) with 5-minute interval average
 adj_data[is.na(adj_data$adj_steps), adj_steps := as.integer(avgsteps)]
 
+## Calculate total steps taken per day adjusted and with NA
 total_steps_day <- summarize(group_by(adj_data, date), 
                              tot_steps_adj = sum(adj_steps), 
                              tot_steps_na = sum(steps, na.rm=TRUE))
@@ -152,7 +162,7 @@ adj_data$wk_end <- as.factor("Weekday")
 adj_data[as.character(adj_data$day_wk) %in% c("5":"6"), wk_end := as.factor("Weekend")]
 
 
-ggplot(adj_data, aes(interval, adj_steps)) + geom_line() + facet_grid(wk_end ~ .) + labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + ylab("Number of steps")
+ggplot(adj_data, aes(interval, adj_steps)) + geom_line() + facet_wrap(~wk_end, nrow=2) + labs(title = "Average Daily Activity Pattern \n averaged at 5-minute Intervals") + ylab("Number of steps") + theme(legend.position = "top")
 
 
 ```
